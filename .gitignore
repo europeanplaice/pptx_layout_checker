@@ -1,0 +1,5 @@
+env/
+different_font/
+same_font/
+__pycache__/
+.pytest_cache/
