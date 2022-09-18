@@ -31,6 +31,26 @@ def extract_fonts(path: Path) -> list[dict[str, str]]:
         "p:sp", namespaces)
     fonts: list[dict[str, str]] = []
     for psp in psps:
+        background_color = psp.find("p:spPr", namespaces)
+        try:
+            background_color = background_color.find("p:solidFill", namespaces)
+            background_color = background_color.find("p:srgbClr", namespaces)
+        except AttributeError:
+            background_color = None
+        text_color = psp.find("p:txBody", namespaces)
+        text_color = text_color.find("a:p", namespaces)
+        text_color = text_color.find("a:r", namespaces)
+        text_color = text_color.find("a:rPr", namespaces)
+        try:
+            solidFill = text_color.find("a:solidFill", namespaces) \
+                                  .find("p:srgbClr", namespaces).attrib["val"]
+        except AttributeError:
+            solidFill = None
+        try:
+            highlight = text_color.find("a:highlight", namespaces) \
+                                  .find("p:srgbClr", namespaces).attrib["val"]
+        except AttributeError:
+            highlight = None
         name = psp.find("p:nvSpPr", namespaces)
         name = name.find("p:cNvPr", namespaces).attrib["name"]
         try:

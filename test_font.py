@@ -5,7 +5,7 @@ import json
 import tempfile
 
 
-def test_font_on_different_font(config):
+def test_font_on_different_font():
     extract_pptx(Path("different_font.pptx"))
     fonts = extract_fonts(Path("different_font.pptx").with_suffix(
         "").joinpath("ppt/slides/slide1.xml"))
