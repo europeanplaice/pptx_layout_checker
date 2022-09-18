@@ -1,4 +1,4 @@
-from utils import extract_pptx, parse_xml
+from utils import extract_pptx, extract_fonts
 from pathlib import Path
 import tempfile
 import argparse
@@ -16,7 +16,7 @@ def main():
         extract_pptx(path, dir)
         for slide in glob.glob(str(Path(dir).with_suffix(
                 "").joinpath("ppt/slides/*.xml"))):
-            fonts += parse_xml(slide)
+            fonts += extract_fonts(slide)
     if len(set(fonts)) > 1:
         print("This pptx contains different fonts.")
         print(fonts)

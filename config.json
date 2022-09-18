@@ -1,0 +1,5 @@
+{
+    "filepath": "different_font.pptx",
+    "only_one_font": true,
+    "allowed_color_list": ["#000000", "#FF0000"]
+}
