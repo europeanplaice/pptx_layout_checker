@@ -1,5 +1,8 @@
 env/
 different_font/
+different_font2/
 same_font/
 __pycache__/
 .pytest_cache/
+node_modules/
+.vscode/
