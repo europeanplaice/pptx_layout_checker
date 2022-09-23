@@ -1,18 +1,14 @@
 from utils import func_to_whole_process, check_func
-from pathlib import Path
 import tempfile
-import argparse
+import json
 
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('path')
-    args = parser.parse_args()
-
-    path = Path(args.path)
+    with open("config.json", "r") as f:
+        config = json.load(f)
     with tempfile.TemporaryDirectory() as dir:
-        fontlist = func_to_whole_process(path, dir)
-    print(check_func(fontlist, "default"))
+        fontlist = func_to_whole_process(config["filepath"], dir)
+    print(check_func(fontlist, config["font_to_be"]))
 
 
 if __name__ == "__main__":

@@ -1,5 +1,4 @@
 {
-    "filepath": "different_font.pptx",
-    "only_one_font": true,
-    "allowed_color_list": ["#000000", "#FF0000"]
+    "filepath": "font_sample/font_abadi.pptx ",
+    "font_to_be": "Abadi"
 }

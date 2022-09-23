@@ -8,6 +8,7 @@ import tempfile
 from typing import Optional
 import glob
 
+
 def get_name(psp):
     name = psp.find("p:nvSpPr", namespaces)
     if name is None:
@@ -54,8 +55,7 @@ def test_extract_default():
         extract_pptx(Path("color_sample/default_color.pptx"), Path(dir))
         for i in glob.glob(str(Path(dir).joinpath("ppt/slides/*.xml"))):
             tree = ET.parse(i)
-            psps = tree.getroot()[0][0].findall(
-                "p:sp", namespaces)
+            psps = tree.getroot()[0][0].findall("p:sp", namespaces)
             assert len(psps) > 0
             for psp in psps:
                 assert get_name(psp) == "テキスト ボックス 3"
@@ -69,8 +69,7 @@ def test_extract_color():
         extract_pptx(Path("color_sample/text_color_red.pptx"), Path(dir))
         for i in glob.glob(str(Path(dir).joinpath("ppt/slides/*.xml"))):
             tree = ET.parse(i)
-            psps = tree.getroot()[0][0].findall(
-                "p:sp", namespaces)
+            psps = tree.getroot()[0][0].findall("p:sp", namespaces)
             assert len(psps) > 0
             for psp in psps:
                 assert get_name(psp) == "テキスト ボックス 3"
@@ -85,8 +84,7 @@ def test_extract_color_highlight():
         extract_pptx(Path("color_sample/text_color_red_highlight.pptx"), Path(dir))
         for i in glob.glob(str(Path(dir).joinpath("ppt/slides/*.xml"))):
             tree = ET.parse(i)
-            psps = tree.getroot()[0][0].findall(
-                "p:sp", namespaces)
+            psps = tree.getroot()[0][0].findall("p:sp", namespaces)
             assert len(psps) > 0
             for psp in psps:
                 assert get_name(psp) == "テキスト ボックス 3"

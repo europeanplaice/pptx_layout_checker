@@ -17,14 +17,9 @@ def extract_pptx(path: Path, dir: Optional[Union[str, Path]] = None) -> None:
         zf.extractall(dir)
 
 
-def parse_xml(path: Path) -> list[Optional[str]]:
-    tree = ET.parse(path)
-    psps = tree.getroot()[0][0].findall(
-        "p:sp", namespaces)
-    fonts = []
-
-
-def check_func(fontlist: list[tuple[str, str]], font_to_be: str) -> Optional[dict[str, str]]:
+def check_func(
+    fontlist: list[tuple[str, str]], font_to_be: str
+) -> Optional[dict[str, str]]:
     error_dict = {}
     for i, v in fontlist:
         if i is None:
@@ -36,13 +31,12 @@ def check_func(fontlist: list[tuple[str, str]], font_to_be: str) -> Optional[dic
     return error_dict
 
 
-def func_to_whole_process(pathname: str, dirname: Optional[str]=None):
+def func_to_whole_process(pathname: str, dirname: Optional[str] = None):
     extract_pptx(Path(pathname), Path(dirname))
     fontlist = []
     for i in glob.glob(str(Path(dirname).joinpath("ppt/slides/*.xml"))):
         tree = ET.parse(i)
-        psps = tree.getroot()[0][0].findall(
-            "p:sp", namespaces)
+        psps = tree.getroot()[0][0].findall("p:sp", namespaces)
         for psp in psps:
             fontlist.append(function_for_all_font(psp))
     return fontlist
