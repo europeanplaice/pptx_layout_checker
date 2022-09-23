@@ -7,14 +7,14 @@ It checks whether the fonts used in the powerpoint file are different.
 python main.py different_font.pptx
 
 >>> This pptx contains different fonts.
->>> ['Arial Black', 'Amasis MT Pro Black', 'Berlin Sans FB Demi', None]
+>>> {'Text Box 3': 'Should be default, but Abadi.'}
 ```
 
 
 ```python
 python main.py same_font.pptx
 
->>> Great, this pptx contains the same font.
+>>> Great, all grean.
 ```
 
 ## disclaimer

@@ -2,6 +2,7 @@ import zipfile
 from pathlib import Path
 import xml.etree.ElementTree as ET
 from typing import Optional, Union
+import glob
 
 namespaces = {
     "p": "http://schemas.openxmlformats.org/presentationml/2006/main",
@@ -9,74 +10,75 @@ namespaces = {
 }
 
 
-def get_unique_fonts(fonts) -> list[Optional[str]]:
-    font_names = []
-    for font in fonts:
-        if font["font_name"] is None:
-            continue
-        font_names.append(font["font_name"])
-    return list(set(font_names))
-
-
-def extract_pptx(path: Path, dir: Union[str, Path] = None):
+def extract_pptx(path: Path, dir: Optional[Union[str, Path]] = None) -> None:
     if dir is None:
         dir = path.with_suffix("")
     with zipfile.ZipFile(path) as zf:
         zf.extractall(dir)
 
 
-def extract_fonts(path: Path) -> list[dict[str, str]]:
+def parse_xml(path: Path) -> list[Optional[str]]:
     tree = ET.parse(path)
     psps = tree.getroot()[0][0].findall(
         "p:sp", namespaces)
-    fonts: list[dict[str, str]] = []
-    for psp in psps:
-        background_color = psp.find("p:spPr", namespaces)
-        try:
-            background_color = background_color.find("p:solidFill", namespaces)
-            background_color = background_color.find("p:srgbClr", namespaces)
-        except AttributeError:
-            background_color = None
-        text_color = psp.find("p:txBody", namespaces)
-        text_color = text_color.find("a:p", namespaces)
-        text_color = text_color.find("a:r", namespaces)
-        text_color = text_color.find("a:rPr", namespaces)
-        try:
-            solidFill = text_color.find("a:solidFill", namespaces) \
-                                  .find("p:srgbClr", namespaces).attrib["val"]
-        except AttributeError:
-            solidFill = None
-        try:
-            highlight = text_color.find("a:highlight", namespaces) \
-                                  .find("p:srgbClr", namespaces).attrib["val"]
-        except AttributeError:
-            highlight = None
-        name = psp.find("p:nvSpPr", namespaces)
-        name = name.find("p:cNvPr", namespaces).attrib["name"]
-        try:
-            font = psp.find("p:txBody", namespaces) \
-                      .find("a:p", namespaces) \
-                      .find("a:r", namespaces)
-        except AttributeError:
-            font = None
-            fonts.append({"object_name": name, "font_name": font})
+    fonts = []
+
+
+def check_func(fontlist: list[tuple[str, str]], font_to_be: str) -> Optional[dict[str, str]]:
+    error_dict = {}
+    for i, v in fontlist:
+        if i is None:
             continue
-        if font is None:
-            fonts.append({"object_name": name, "font_name": font})
-            continue
-        try:
-            font = font.find("a:rPr", namespaces) \
-                       .find("a:latin", namespaces)
-        except AttributeError:
-            font = "default"
-        if font == "default":
-            fonts.append({"object_name": name, "font_name": font})
-        else:
-            fonts.append({"object_name": name, "font_name": font.attrib["typeface"]})
-    return fonts
+        if i != font_to_be:
+            error_dict[v] = f"Should be {font_to_be}, but {i}."
+    if len(error_dict) == 0:
+        return "Great, all grean."
+    return error_dict
+
+
+def func_to_whole_process(pathname: str, dirname: Optional[str]=None):
+    extract_pptx(Path(pathname), Path(dirname))
+    fontlist = []
+    for i in glob.glob(str(Path(dirname).joinpath("ppt/slides/*.xml"))):
+        tree = ET.parse(i)
+        psps = tree.getroot()[0][0].findall(
+            "p:sp", namespaces)
+        for psp in psps:
+            fontlist.append(function_for_all_font(psp))
+    return fontlist
+
+
+def function_for_all_font(psp):
+    name = psp.find("p:nvSpPr", namespaces)
+    if name is None:
+        raise ValueError("p:nvSpPr not found")
+    name = name.find("p:cNvPr", namespaces)
+    if name is None:
+        raise ValueError("p:nvSpPr not found")
+    name = name.attrib["name"]
+    font = psp.find("p:txBody", namespaces)
+    if font is None:
+        raise ValueError("p:txBody not found")
+    font = font.find("a:p", namespaces)
+    if font is None:
+        raise ValueError("a:p not found")
+    font_r = font.find("a:r", namespaces)
+    if font_r is None:
+        return None, name
+    font_r = font_r.find("a:rPr", namespaces)
+    if font_r is None:
+        raise ValueError("a:rPr not found")
+    font_endpararpr = font.find("a:endParaRPr", namespaces)
+    if font_endpararpr is None:
+        raise ValueError("a:endParaRPr not found")
+    font_r = font_r.find("a:latin", namespaces)
+    font_endpararpr = font_endpararpr.find("a:latin", namespaces)
+    if font_r is None and font_endpararpr is None:
+        return "default", name
+
+    assert font_r.attrib["typeface"] == font_endpararpr.attrib["typeface"]
+    return font_r.attrib["typeface"], name
 
 
 if __name__ == "__main__":
-    extract_pptx(Path("different_font.pptx"))
-    extract_fonts(Path("different_font.pptx").with_suffix(
-        "").joinpath("ppt/slides/slide1.xml"))
+    extract_pptx(Path("color_sample/shape_color_blue.pptx"))
